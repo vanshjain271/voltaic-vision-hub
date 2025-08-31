@@ -1,16 +1,26 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Menu, X, User } from 'lucide-react';
+import { useAuth } from '@/hooks/useAuth';
+import { Menu, X, User, LogOut } from 'lucide-react';
 
 const Navigation = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const { user, signOut } = useAuth();
+  const navigate = useNavigate();
 
   const navItems = [
     { name: 'Home', href: '#home' },
     { name: 'Gallery', href: '#gallery' },
+    { name: 'Events', href: '#events' },
+    { name: 'Sponsors', href: '#sponsors' },
     { name: 'About', href: '#about' },
-    { name: 'Admin', href: '#admin' },
   ];
+
+  const handleSignOut = async () => {
+    await signOut();
+    navigate('/');
+  };
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 glass-card border-b border-glass-border">
@@ -36,12 +46,34 @@ const Navigation = () => {
             </div>
           </div>
 
-          {/* Admin Login Button */}
+          {/* Auth Section */}
           <div className="hidden md:block">
-            <Button variant="outline" size="sm" className="btn-glass">
-              <User className="w-4 h-4 mr-2" />
-              Admin Login
-            </Button>
+            {user ? (
+              <div className="flex items-center space-x-4">
+                <span className="text-sm text-muted-foreground">
+                  Welcome back!
+                </span>
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className="btn-glass"
+                  onClick={handleSignOut}
+                >
+                  <LogOut className="w-4 h-4 mr-2" />
+                  Sign Out
+                </Button>
+              </div>
+            ) : (
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="btn-glass"
+                onClick={() => navigate('/auth')}
+              >
+                <User className="w-4 h-4 mr-2" />
+                Sign In
+              </Button>
+            )}
           </div>
 
           {/* Mobile menu button */}
@@ -72,11 +104,34 @@ const Navigation = () => {
                 {item.name}
               </a>
             ))}
-            <div className="px-3 py-2">
-              <Button variant="outline" size="sm" className="btn-glass w-full">
-                <User className="w-4 h-4 mr-2" />
-                Admin Login
-              </Button>
+            <div className="px-3 py-2 border-t border-glass-border mt-2">
+              {user ? (
+                <div className="space-y-2">
+                  <p className="text-sm text-muted-foreground">Welcome back!</p>
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    className="btn-glass w-full"
+                    onClick={handleSignOut}
+                  >
+                    <LogOut className="w-4 h-4 mr-2" />
+                    Sign Out
+                  </Button>
+                </div>
+              ) : (
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className="btn-glass w-full"
+                  onClick={() => {
+                    setIsOpen(false);
+                    navigate('/auth');
+                  }}
+                >
+                  <User className="w-4 h-4 mr-2" />
+                  Sign In
+                </Button>
+              )}
             </div>
           </div>
         </div>

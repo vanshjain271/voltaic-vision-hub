@@ -1,4 +1,11 @@
+import { Button } from '@/components/ui/button';
+import { useAuth } from '@/hooks/useAuth';
+import { useNavigate } from 'react-router-dom';
+
 const Hero = () => {
+  const { user } = useAuth();
+  const navigate = useNavigate();
+
   return (
     <section id="home" className="min-h-screen flex items-center justify-center pt-16">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
@@ -23,18 +30,32 @@ const Hero = () => {
           </p>
           
           <p className="text-lg text-muted-foreground max-w-3xl mx-auto">
-            Discover the future through our digital gallery of cutting-edge visuals and innovative experiences.
+            {user 
+              ? `Welcome back! Explore our dynamic gallery, upcoming events, and connect with our community.`
+              : `Discover the future through our digital gallery, manage events, and be part of our innovative community.`
+            }
           </p>
         </div>
 
-        {/* CTA Button */}
-        <div className="mt-12 animate-slide-in" style={{ animationDelay: '0.6s' }}>
+        {/* CTA Buttons */}
+        <div className="mt-12 flex flex-col sm:flex-row gap-4 justify-center animate-slide-in" style={{ animationDelay: '0.6s' }}>
           <a
             href="#gallery"
             className="inline-flex items-center px-8 py-4 text-lg font-medium rounded-full btn-neon transition-all hover:scale-105"
           >
             Explore Gallery
           </a>
+          
+          {!user && (
+            <Button
+              onClick={() => navigate('/auth')}
+              variant="outline"
+              size="lg"
+              className="btn-glass px-8 py-4 text-lg font-medium rounded-full"
+            >
+              Join The Network
+            </Button>
+          )}
         </div>
 
         {/* Scroll Indicator */}

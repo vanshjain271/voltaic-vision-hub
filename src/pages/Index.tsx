@@ -1,10 +1,25 @@
+import { useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import Navigation from '@/components/Navigation';
 import ParticlesBackground from '@/components/ParticlesBackground';
 import Hero from '@/components/Hero';
-import Gallery from '@/components/Gallery';
+import { DynamicGallery } from '@/components/DynamicGallery';
+import { EventsSection } from '@/components/EventsSection';
+import { SponsorsSection } from '@/components/SponsorsSection';
 import About from '@/components/About';
+import { useAuth } from '@/hooks/useAuth';
 
 const Index = () => {
+  const { user, loading } = useAuth();
+  const navigate = useNavigate();
+
+  // Auto-redirect authenticated users from auth page
+  useEffect(() => {
+    if (!loading && user && window.location.pathname === '/auth') {
+      navigate('/');
+    }
+  }, [user, loading, navigate]);
+
   return (
     <div className="min-h-screen bg-background text-foreground font-orbitron">
       {/* Animated Background */}
@@ -18,26 +33,17 @@ const Index = () => {
         {/* Hero Section */}
         <Hero />
         
-        {/* Gallery Section */}
-        <Gallery />
+        {/* Dynamic Gallery Section */}
+        <DynamicGallery />
+        
+        {/* Events Section */}
+        <EventsSection />
+        
+        {/* Sponsors Section */}
+        <SponsorsSection />
         
         {/* About Section */}
         <About />
-        
-        {/* Admin Section Placeholder */}
-        <section id="admin" className="py-20">
-          <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-            <div className="glass-card rounded-2xl p-12 neon-glow animate-slide-in">
-              <h2 className="text-4xl font-bold mb-6 neon-text">Admin Portal</h2>
-              <p className="text-lg text-muted-foreground mb-8">
-                Administrative access for content management and system controls.
-              </p>
-              <div className="text-sm text-muted-foreground">
-                Coming Soon - Full admin functionality will be implemented
-              </div>
-            </div>
-          </div>
-        </section>
       </main>
       
       {/* Footer */}
