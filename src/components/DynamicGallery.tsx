@@ -97,6 +97,19 @@ export const DynamicGallery = () => {
     }
   }, [selectedAlbum]);
 
+  // Auto-rotate photos every 5 seconds when viewing an album
+  useEffect(() => {
+    if (selectedAlbum && photos.length > 1) {
+      const interval = setInterval(() => {
+        setCurrentIndex((prevIndex) => 
+          prevIndex === photos.length - 1 ? 0 : prevIndex + 1
+        );
+      }, 5000);
+      
+      return () => clearInterval(interval);
+    }
+  }, [selectedAlbum, photos.length]);
+
   // Auto-rotation for photos
   useEffect(() => {
     if (photos.length > 1) {
