@@ -6,6 +6,8 @@ import Hero from '@/components/Hero';
 import { DynamicGallery } from '@/components/DynamicGallery';
 import { EventsSection } from '@/components/EventsSection';
 import { SponsorsSection } from '@/components/SponsorsSection';
+import { BlogSection } from '@/components/BlogSection';
+import { MembersDirectory } from '@/components/MembersDirectory';
 import About from '@/components/About';
 import { useAuth } from '@/hooks/useAuth';
 
@@ -41,6 +43,12 @@ const Index = () => {
         
         {/* Sponsors Section */}
         <SponsorsSection />
+        
+        {/* Blog Section */}
+        <BlogSection />
+        
+        {/* Members Directory */}
+        <MembersDirectory />
         
         {/* About Section */}
         <About />

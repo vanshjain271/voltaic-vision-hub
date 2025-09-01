@@ -97,6 +97,19 @@ export const DynamicGallery = () => {
     }
   }, [selectedAlbum]);
 
+  // Auto-rotation for photos
+  useEffect(() => {
+    if (photos.length > 1) {
+      const interval = setInterval(() => {
+        setCurrentIndex((prevIndex) => 
+          prevIndex === photos.length - 1 ? 0 : prevIndex + 1
+        );
+      }, 5000); // Change photo every 5 seconds
+
+      return () => clearInterval(interval);
+    }
+  }, [photos.length]);
+
   // Create new album
   const createAlbum = async () => {
     if (!user || !albumTitle.trim()) return;
