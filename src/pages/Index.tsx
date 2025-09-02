@@ -1,71 +1,92 @@
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import Navigation from '@/components/Navigation';
-import ParticlesBackground from '@/components/ParticlesBackground';
-import Hero from '@/components/Hero';
-import { DynamicGallery } from '@/components/DynamicGallery';
-import { EventsSection } from '@/components/EventsSection';
-import { SponsorsSection } from '@/components/SponsorsSection';
-import { BlogSection } from '@/components/BlogSection';
-import { MembersDirectory } from '@/components/MembersDirectory';
-import About from '@/components/About';
 import { useAuth } from '@/hooks/useAuth';
+import ParticlesBackground from '@/components/ParticlesBackground';
+import Navigation from '@/components/Navigation';
+import Hero from '@/components/Hero';
+import About from '@/components/About';
 
 const Index = () => {
-  const { user, loading } = useAuth();
   const navigate = useNavigate();
+  const { user } = useAuth();
 
-  // Auto-redirect authenticated users from auth page
   useEffect(() => {
-    if (!loading && user && window.location.pathname === '/auth') {
+    // Redirect authenticated users from auth page to home
+    if (user && window.location.pathname === '/auth') {
       navigate('/');
     }
-  }, [user, loading, navigate]);
+  }, [user, navigate]);
 
   return (
-    <div className="min-h-screen bg-background text-foreground font-orbitron">
-      {/* Animated Background */}
+    <div className="min-h-screen bg-background">
       <ParticlesBackground />
-      
-      {/* Navigation */}
       <Navigation />
       
-      {/* Main Content */}
-      <main className="relative z-10">
+      <main className="relative">
         {/* Hero Section */}
-        <Hero />
-        
-        {/* Dynamic Gallery Section */}
-        <DynamicGallery />
-        
-        {/* Events Section */}
-        <EventsSection />
-        
-        {/* Sponsors Section */}
-        <SponsorsSection />
-        
-        {/* Blog Section */}
-        <BlogSection />
-        
-        {/* Members Directory */}
-        <MembersDirectory />
+        <section className="min-h-screen flex items-center justify-center pt-16">
+          <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            {/* Club Logo - Prominent Display */}
+            <div className="mb-12 animate-fade-in">
+              <img
+                src="/lovable-uploads/2e32e8e2-a824-49a8-a0dc-1066eb2e770e.png"
+                alt="Club Logo"
+                className="mx-auto max-w-md w-full h-auto hover-scale transition-transform duration-500"
+              />
+            </div>
+
+            {/* Welcome Text */}
+            <div className="space-y-6 animate-fade-in" style={{ animationDelay: '0.3s' }}>
+              <h1 className="text-5xl md:text-7xl font-bold tracking-tight">
+                Welcome to{' '}
+                <span className="bg-gradient-to-r from-primary to-primary/80 bg-clip-text text-transparent">
+                  ClubNetwork
+                </span>
+              </h1>
+              
+              <p className="text-xl md:text-2xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
+                Connect • Learn • Grow Together
+              </p>
+              
+              <p className="text-lg text-muted-foreground max-w-3xl mx-auto">
+                {user 
+                  ? `Welcome back! Explore our community and stay updated with latest events.`
+                  : `Join our vibrant community of learners and innovators. Discover events, connect with members, and be part of something amazing.`
+                }
+              </p>
+            </div>
+
+            {/* CTA Buttons */}
+            {!user && (
+              <div className="mt-12 animate-fade-in" style={{ animationDelay: '0.6s' }}>
+                <button
+                  onClick={() => navigate('/join')}
+                  className="bg-primary hover:bg-primary/90 text-primary-foreground px-8 py-4 text-lg font-medium rounded-full transition-all hover:scale-105"
+                >
+                  Join The Network
+                </button>
+              </div>
+            )}
+
+            {/* Scroll Indicator */}
+            <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 animate-pulse">
+              <div className="w-6 h-10 border-2 border-primary rounded-full flex justify-center">
+                <div className="w-1 h-3 bg-primary rounded-full mt-2 animate-bounce"></div>
+              </div>
+            </div>
+          </div>
+        </section>
         
         {/* About Section */}
-        <About />
+        <section className="py-20 bg-muted/50">
+          <About />
+        </section>
       </main>
       
       {/* Footer */}
-      <footer className="relative z-10 py-12 border-t border-glass-border">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center">
-            <div className="neon-text text-xl font-bold mb-4">THE NETWORK</div>
-            <p className="text-muted-foreground mb-4">
-              Originality • Intent • Opportunity
-            </p>
-            <div className="text-sm text-muted-foreground">
-              © 2024 The Network. All rights reserved.
-            </div>
-          </div>
+      <footer className="bg-background border-t border-border py-8">
+        <div className="container mx-auto px-4 text-center text-muted-foreground">
+          <p>&copy; 2024 ClubNetwork. All rights reserved.</p>
         </div>
       </footer>
     </div>

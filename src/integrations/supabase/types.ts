@@ -103,6 +103,45 @@ export type Database = {
           },
         ]
       }
+      join_applications: {
+        Row: {
+          branch: string
+          created_at: string | null
+          id: string
+          name: string
+          prior_experience: string | null
+          reason_to_join: string
+          reviewed_at: string | null
+          reviewed_by: string | null
+          roll_number: string
+          status: string | null
+        }
+        Insert: {
+          branch: string
+          created_at?: string | null
+          id?: string
+          name: string
+          prior_experience?: string | null
+          reason_to_join: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          roll_number: string
+          status?: string | null
+        }
+        Update: {
+          branch?: string
+          created_at?: string | null
+          id?: string
+          name?: string
+          prior_experience?: string | null
+          reason_to_join?: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          roll_number?: string
+          status?: string | null
+        }
+        Relationships: []
+      }
       memberships: {
         Row: {
           club_id: string | null
@@ -347,6 +386,27 @@ export type Database = {
           },
         ]
       }
+      user_roles: {
+        Row: {
+          created_at: string | null
+          id: string
+          role: Database["public"]["Enums"]["user_role"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          role?: Database["public"]["Enums"]["user_role"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          role?: Database["public"]["Enums"]["user_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
       users: {
         Row: {
           created_at: string | null
@@ -376,10 +436,17 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      get_user_role: {
+        Args: { user_id: string }
+        Returns: Database["public"]["Enums"]["user_role"]
+      }
+      is_admin: {
+        Args: { user_id?: string }
+        Returns: boolean
+      }
     }
     Enums: {
-      [_ in never]: never
+      user_role: "admin" | "visitor"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -506,6 +573,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      user_role: ["admin", "visitor"],
+    },
   },
 } as const
