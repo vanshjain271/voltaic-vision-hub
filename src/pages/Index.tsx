@@ -40,19 +40,6 @@ const Index = () => {
         {/* Hero Section */}
         <section className="min-h-screen flex items-center justify-center pt-16">
           <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-            {/* Network Logo - 3D positioned top-left */}
-            <div className="absolute top-8 left-8 animate-fade-in">
-              <img
-                src="/lovable-uploads/2e32e8e2-a824-49a8-a0dc-1066eb2e770e.png"
-                alt="The Network Logo"
-                className="w-20 h-20 object-contain animate-spin-slow"
-                style={{
-                  filter: 'drop-shadow(0 0 15px hsl(var(--primary) / 0.4))',
-                  transform: 'perspective(600px) rotateY(-10deg) rotateX(3deg)',
-                }}
-              />
-            </div>
-
             {/* Club Logo - Prominent Display */}
             <div className="mb-12 animate-fade-in">
               <div className="relative">
