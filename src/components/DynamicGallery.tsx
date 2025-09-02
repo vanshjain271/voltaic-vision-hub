@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
+import { useRole } from '@/hooks/useRole';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -8,7 +9,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { ChevronLeft, ChevronRight, Plus, Upload, X, Eye } from 'lucide-react';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
+import { ChevronLeft, ChevronRight, Plus, Upload, X, Eye, Trash2 } from 'lucide-react';
 
 interface Photo {
   id: string;
@@ -44,6 +46,7 @@ export const DynamicGallery = () => {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
   const { user } = useAuth();
+  const { isAdmin } = useRole();
   const { toast } = useToast();
 
   // Fetch albums
@@ -208,6 +211,59 @@ export const DynamicGallery = () => {
       toast({
         title: "Error",
         description: error.message,
+        variant: "destructive",
+      });
+    }
+    setUploading(false);
+  };
+
+  // Delete photo
+  const deletePhoto = async (photoId: string, imageUrl: string) => {
+    if (!user || !isAdmin) return;
+    
+    setUploading(true);
+    try {
+      // Extract file path from URL
+      const urlParts = imageUrl.split('/');
+      const bucketPath = urlParts.slice(-2).join('/'); // Get user_id/filename.ext
+      
+      // Delete from storage first
+      const { error: storageError } = await supabase.storage
+        .from('albums')
+        .remove([bucketPath]);
+      
+      if (storageError) {
+        console.warn('Storage deletion failed:', storageError);
+        // Continue with database deletion even if storage fails
+      }
+      
+      // Delete from database
+      const { error } = await supabase
+        .from('photos')
+        .delete()
+        .eq('id', photoId);
+      
+      if (error) throw error;
+      
+      // Update local state
+      const updatedPhotos = photos.filter(p => p.id !== photoId);
+      setPhotos(updatedPhotos);
+      
+      // Adjust current index if needed
+      if (currentIndex >= updatedPhotos.length && updatedPhotos.length > 0) {
+        setCurrentIndex(updatedPhotos.length - 1);
+      } else if (updatedPhotos.length === 0) {
+        setCurrentIndex(0);
+      }
+      
+      toast({
+        title: "Success",
+        description: "Photo deleted successfully!",
+      });
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to delete photo",
         variant: "destructive",
       });
     }
@@ -431,6 +487,40 @@ export const DynamicGallery = () => {
                         </>
                       )}
 
+                      {/* Delete Button - Only for Admins */}
+                      {isAdmin && (
+                        <AlertDialog>
+                          <AlertDialogTrigger asChild>
+                            <Button
+                              variant="destructive"
+                              size="icon"
+                              className="absolute top-4 right-4 bg-destructive/80 hover:bg-destructive"
+                              disabled={uploading}
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </Button>
+                          </AlertDialogTrigger>
+                          <AlertDialogContent className="glass-card border-glass-border">
+                            <AlertDialogHeader>
+                              <AlertDialogTitle>Delete Photo</AlertDialogTitle>
+                              <AlertDialogDescription>
+                                Are you sure you want to delete "{photos[currentIndex].title || 'this photo'}"? 
+                                This action cannot be undone.
+                              </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                              <AlertDialogCancel>Cancel</AlertDialogCancel>
+                              <AlertDialogAction
+                                onClick={() => deletePhoto(photos[currentIndex].id, photos[currentIndex].image_url)}
+                                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                              >
+                                Delete Photo
+                              </AlertDialogAction>
+                            </AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialog>
+                      )}
+
                       {/* Photo Info Overlay */}
                       <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-background/80 to-transparent p-6">
                         <h4 className="text-xl font-bold text-foreground mb-2">
@@ -469,7 +559,7 @@ export const DynamicGallery = () => {
                     {photos.map((photo, index) => (
                       <div
                         key={photo.id}
-                        className={`gallery-item glass-card rounded-lg overflow-hidden cursor-pointer ${
+                        className={`gallery-item glass-card rounded-lg overflow-hidden cursor-pointer relative group ${
                           index === currentIndex ? 'ring-2 ring-primary' : ''
                         }`}
                         onClick={() => setCurrentIndex(index)}
@@ -479,6 +569,41 @@ export const DynamicGallery = () => {
                           alt={photo.title || 'Photo'}
                           className="w-full aspect-square object-cover"
                         />
+                        
+                        {/* Delete button on thumbnail - Only for Admins */}
+                        {isAdmin && (
+                          <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                              <Button
+                                variant="destructive"
+                                size="icon"
+                                className="absolute top-2 right-2 w-6 h-6 opacity-0 group-hover:opacity-100 transition-opacity bg-destructive/80 hover:bg-destructive"
+                                disabled={uploading}
+                                onClick={(e) => e.stopPropagation()}
+                              >
+                                <Trash2 className="w-3 h-3" />
+                              </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent className="glass-card border-glass-border">
+                              <AlertDialogHeader>
+                                <AlertDialogTitle>Delete Photo</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                  Are you sure you want to delete "{photo.title || 'this photo'}"? 
+                                  This action cannot be undone.
+                                </AlertDialogDescription>
+                              </AlertDialogHeader>
+                              <AlertDialogFooter>
+                                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                <AlertDialogAction
+                                  onClick={() => deletePhoto(photo.id, photo.image_url)}
+                                  className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                                >
+                                  Delete Photo
+                                </AlertDialogAction>
+                              </AlertDialogFooter>
+                            </AlertDialogContent>
+                          </AlertDialog>
+                        )}
                       </div>
                     ))}
                   </div>
