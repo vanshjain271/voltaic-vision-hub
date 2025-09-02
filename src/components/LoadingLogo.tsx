@@ -27,10 +27,9 @@ const LoadingLogo = ({ onComplete }: LoadingLogoProps) => {
           <img
             src="/lovable-uploads/2e32e8e2-a824-49a8-a0dc-1066eb2e770e.png"
             alt="The Network Logo"
-            className="w-48 h-48 object-contain neon-glow animate-spin-slow"
+            className="w-48 h-48 object-contain neon-glow"
             style={{
               filter: 'drop-shadow(0 0 25px hsl(var(--primary) / 0.6))',
-              transform: 'perspective(1000px) rotateY(15deg) rotateX(8deg)',
             }}
           />
           <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-primary/15 to-transparent rounded-lg" />
