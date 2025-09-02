@@ -45,10 +45,10 @@ const Index = () => {
               <img
                 src="/lovable-uploads/2e32e8e2-a824-49a8-a0dc-1066eb2e770e.png"
                 alt="The Network Logo"
-                className="w-24 h-24 object-contain"
+                className="w-20 h-20 object-contain animate-spin-slow"
                 style={{
-                  filter: 'drop-shadow(0 0 10px hsl(var(--primary) / 0.3))',
-                  transform: 'perspective(500px) rotateY(-15deg) rotateX(5deg)',
+                  filter: 'drop-shadow(0 0 15px hsl(var(--primary) / 0.4))',
+                  transform: 'perspective(600px) rotateY(-10deg) rotateX(3deg)',
                 }}
               />
             </div>
