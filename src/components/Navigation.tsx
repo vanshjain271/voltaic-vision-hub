@@ -43,15 +43,16 @@ const Navigation = () => {
     <nav className="fixed top-0 left-0 right-0 bg-background/95 backdrop-blur-sm border-b border-border z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
-          {/* Animated Network Logo */}
-          <Link to="/" className="flex-shrink-0 flex items-center space-x-2">
-            <div className="relative">
-              <Network className="h-8 w-8 text-primary animate-pulse" />
-              <div className="absolute inset-0 animate-ping">
-                <Network className="h-8 w-8 text-primary opacity-30" />
-              </div>
-            </div>
-            <h1 className="text-xl font-bold text-primary">ClubNetwork</h1>
+          {/* Network Logo */}
+          <Link to="/" className="flex-shrink-0 flex items-center">
+            <img
+              src="/lovable-uploads/2e32e8e2-a824-49a8-a0dc-1066eb2e770e.png"
+              alt="The Network Logo"
+              className="h-10 w-10 object-contain"
+              style={{
+                filter: 'drop-shadow(0 0 10px hsl(var(--primary) / 0.3))',
+              }}
+            />
           </Link>
 
           {/* Desktop Navigation */}
