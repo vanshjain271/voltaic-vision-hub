@@ -1,12 +1,13 @@
 import { useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
+import { useRole } from '@/hooks/useRole';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { PenTool, Calendar, User, Plus, Eye } from 'lucide-react';
+import { PenTool, Calendar, User, Plus, Eye, Edit, Trash2 } from 'lucide-react';
 
 // Temporary mock data for demo purposes
 interface BlogPost {
@@ -38,6 +39,7 @@ export const BlogSection = () => {
     }
   ]);
   const [creating, setCreating] = useState(false);
+  const [editingPost, setEditingPost] = useState<BlogPost | null>(null);
   
   // Form states
   const [showCreatePost, setShowCreatePost] = useState(false);
@@ -46,28 +48,50 @@ export const BlogSection = () => {
   const [postExcerpt, setPostExcerpt] = useState('');
 
   const { user } = useAuth();
+  const { isAdmin } = useRole();
 
   // Create post (demo version)
   const savePost = async () => {
-    if (!user || !postTitle.trim() || !postContent.trim()) return;
+    if (!postTitle.trim() || !postContent.trim()) return;
     
     setCreating(true);
     
     // Simulate API call
     setTimeout(() => {
-      const newPost: BlogPost = {
-        id: Date.now().toString(),
-        title: postTitle,
-        content: postContent,
-        excerpt: postExcerpt || postContent.substring(0, 150) + '...',
-        author: user.email?.split('@')[0] || 'Anonymous',
-        created_at: new Date().toISOString(),
-      };
+      if (editingPost) {
+        // Update existing post
+        const updatedPost: BlogPost = {
+          ...editingPost,
+          title: postTitle,
+          content: postContent,
+          excerpt: postExcerpt || postContent.substring(0, 150) + '...',
+        };
+        setPosts(posts.map(p => p.id === editingPost.id ? updatedPost : p));
+      } else {
+        // Create new post
+        const newPost: BlogPost = {
+          id: Date.now().toString(),
+          title: postTitle,
+          content: postContent,
+          excerpt: postExcerpt || postContent.substring(0, 150) + '...',
+          author: user?.email?.split('@')[0] || 'Anonymous',
+          created_at: new Date().toISOString(),
+        };
+        setPosts([newPost, ...posts]);
+      }
 
-      setPosts([newPost, ...posts]);
       resetForm();
       setCreating(false);
     }, 1000);
+  };
+
+  // Edit post
+  const startEditPost = (post: BlogPost) => {
+    setEditingPost(post);
+    setPostTitle(post.title);
+    setPostContent(post.content);
+    setPostExcerpt(post.excerpt || '');
+    setShowCreatePost(true);
   };
 
   // Delete post (demo version)
@@ -81,6 +105,7 @@ export const BlogSection = () => {
     setPostContent('');
     setPostExcerpt('');
     setShowCreatePost(false);
+    setEditingPost(null);
   };
 
   const formatDate = (dateString: string) => {
@@ -104,7 +129,7 @@ export const BlogSection = () => {
             </p>
           </div>
           
-          {user && (
+          {isAdmin && (
             <Dialog open={showCreatePost} onOpenChange={setShowCreatePost}>
               <DialogTrigger asChild>
                 <Button className="btn-neon">
@@ -114,9 +139,9 @@ export const BlogSection = () => {
               </DialogTrigger>
               <DialogContent className="glass-card border-glass-border max-w-2xl">
                 <DialogHeader>
-                  <DialogTitle>Write New Blog Post</DialogTitle>
+                  <DialogTitle>{editingPost ? 'Edit Blog Post' : 'Write New Blog Post'}</DialogTitle>
                   <DialogDescription>
-                    Share your thoughts with the community
+                    {editingPost ? 'Update your blog post' : 'Share your thoughts with the community'}
                   </DialogDescription>
                 </DialogHeader>
                 <div className="space-y-4">
@@ -164,7 +189,7 @@ export const BlogSection = () => {
                     disabled={!postTitle.trim() || !postContent.trim() || creating}
                     className="btn-neon"
                   >
-                    {creating ? 'Publishing...' : 'Publish Post'}
+                    {creating ? (editingPost ? 'Updating...' : 'Publishing...') : (editingPost ? 'Update Post' : 'Publish Post')}
                   </Button>
                 </DialogFooter>
               </DialogContent>
@@ -181,19 +206,43 @@ export const BlogSection = () => {
               style={{ animationDelay: `${index * 0.1}s` }}
             >
               <CardHeader>
-                <CardTitle className="text-lg leading-tight mb-2">
-                  {post.title}
-                </CardTitle>
-                <CardDescription className="flex items-center gap-4 text-sm">
-                  <div className="flex items-center gap-1">
-                    <User className="w-3 h-3" />
-                    <span>{post.author}</span>
+                <div className="flex justify-between items-start">
+                  <div className="flex-1">
+                    <CardTitle className="text-lg leading-tight mb-2">
+                      {post.title}
+                    </CardTitle>
+                    <CardDescription className="flex items-center gap-4 text-sm">
+                      <div className="flex items-center gap-1">
+                        <User className="w-3 h-3" />
+                        <span>{post.author}</span>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <Calendar className="w-3 h-3" />
+                        <span>{formatDate(post.created_at)}</span>
+                      </div>
+                    </CardDescription>
                   </div>
-                  <div className="flex items-center gap-1">
-                    <Calendar className="w-3 h-3" />
-                    <span>{formatDate(post.created_at)}</span>
-                  </div>
-                </CardDescription>
+                  {isAdmin && (
+                    <div className="flex gap-1">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => startEditPost(post)}
+                        className="text-primary hover:bg-primary/10"
+                      >
+                        <Edit className="w-4 h-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => deletePost(post.id)}
+                        className="text-destructive hover:bg-destructive/10"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  )}
+                </div>
               </CardHeader>
               
               <CardContent className="flex-1 flex flex-col">
@@ -215,7 +264,7 @@ export const BlogSection = () => {
             <div className="col-span-full text-center py-12 glass-card rounded-2xl">
               <PenTool className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
               <p className="text-muted-foreground mb-4">No blog posts yet</p>
-              {user && (
+              {isAdmin && (
                 <Button
                   onClick={() => setShowCreatePost(true)}
                   className="btn-neon"

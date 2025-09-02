@@ -290,9 +290,12 @@ export type Database = {
           avatar_url: string | null
           bio: string | null
           created_at: string
+          description: string | null
           full_name: string | null
           id: string
+          linkedin_url: string | null
           location: string | null
+          position: string | null
           role: string | null
           updated_at: string
         }
@@ -300,9 +303,12 @@ export type Database = {
           avatar_url?: string | null
           bio?: string | null
           created_at?: string
+          description?: string | null
           full_name?: string | null
           id: string
+          linkedin_url?: string | null
           location?: string | null
+          position?: string | null
           role?: string | null
           updated_at?: string
         }
@@ -310,9 +316,12 @@ export type Database = {
           avatar_url?: string | null
           bio?: string | null
           created_at?: string
+          description?: string | null
           full_name?: string | null
           id?: string
+          linkedin_url?: string | null
           location?: string | null
+          position?: string | null
           role?: string | null
           updated_at?: string
         }

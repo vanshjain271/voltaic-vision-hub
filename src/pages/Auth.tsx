@@ -84,7 +84,7 @@ const Auth = () => {
                 Welcome to The Network
               </CardTitle>
               <CardDescription className="text-muted-foreground">
-                {isLogin ? 'Sign in to your account' : 'Create your account'}
+                Admin Authentication Portal
               </CardDescription>
             </CardHeader>
 

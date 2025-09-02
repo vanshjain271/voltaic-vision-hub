@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
+import { useRole } from '@/hooks/useRole';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -8,7 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Calendar, MapPin, Users, Plus, Clock, CheckCircle } from 'lucide-react';
+import { Calendar, MapPin, Users, Plus, Clock, CheckCircle, Edit, Trash2 } from 'lucide-react';
 
 interface Event {
   id: string;
@@ -32,6 +33,7 @@ export const EventsSection = () => {
   const [loading, setLoading] = useState(true);
   const [creating, setCreating] = useState(false);
   const [registering, setRegistering] = useState<string | null>(null);
+  const [editingEvent, setEditingEvent] = useState<Event | null>(null);
   
   // Form states
   const [showCreateEvent, setShowCreateEvent] = useState(false);
@@ -40,6 +42,7 @@ export const EventsSection = () => {
   const [eventDate, setEventDate] = useState('');
 
   const { user } = useAuth();
+  const { isAdmin } = useRole();
   const { toast } = useToast();
 
   // Fetch events
@@ -91,7 +94,7 @@ export const EventsSection = () => {
 
   // Create new event
   const createEvent = async () => {
-    if (!user || !eventTitle.trim() || !eventDate) return;
+    if (!eventTitle.trim() || !eventDate) return;
     
     setCreating(true);
     try {
@@ -108,10 +111,7 @@ export const EventsSection = () => {
       if (error) throw error;
 
       setEvents([...events, data]);
-      setEventTitle('');
-      setEventDescription('');
-      setEventDate('');
-      setShowCreateEvent(false);
+      resetForm();
       
       toast({
         title: "Success",
@@ -125,6 +125,87 @@ export const EventsSection = () => {
       });
     }
     setCreating(false);
+  };
+
+  // Update event
+  const updateEvent = async () => {
+    if (!editingEvent || !eventTitle.trim() || !eventDate) return;
+    
+    setCreating(true);
+    try {
+      const { data, error } = await supabase
+        .from('events')
+        .update({
+          title: eventTitle,
+          description: eventDescription,
+          event_date: eventDate,
+        })
+        .eq('id', editingEvent.id)
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      setEvents(events.map(e => e.id === editingEvent.id ? data : e));
+      resetForm();
+      
+      toast({
+        title: "Success",
+        description: "Event updated successfully!",
+      });
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
+    setCreating(false);
+  };
+
+  // Delete event
+  const deleteEvent = async (eventId: string) => {
+    if (!isAdmin) return;
+    
+    try {
+      const { error } = await supabase
+        .from('events')
+        .delete()
+        .eq('id', eventId);
+
+      if (error) throw error;
+
+      setEvents(events.filter(e => e.id !== eventId));
+      
+      toast({
+        title: "Success",
+        description: "Event deleted successfully!",
+      });
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
+  };
+
+  // Reset form
+  const resetForm = () => {
+    setEventTitle('');
+    setEventDescription('');
+    setEventDate('');
+    setShowCreateEvent(false);
+    setEditingEvent(null);
+  };
+
+  // Edit event
+  const startEditEvent = (event: Event) => {
+    setEditingEvent(event);
+    setEventTitle(event.title);
+    setEventDescription(event.description || '');
+    setEventDate(new Date(event.event_date).toISOString().slice(0, 16));
+    setShowCreateEvent(true);
   };
 
   // Register for event
@@ -199,7 +280,7 @@ export const EventsSection = () => {
             Events
           </h2>
           
-          {user && (
+          {isAdmin && (
             <Dialog open={showCreateEvent} onOpenChange={setShowCreateEvent}>
               <DialogTrigger asChild>
                 <Button className="btn-neon">
@@ -209,9 +290,9 @@ export const EventsSection = () => {
               </DialogTrigger>
               <DialogContent className="glass-card border-glass-border">
                 <DialogHeader>
-                  <DialogTitle>Create New Event</DialogTitle>
+                  <DialogTitle>{editingEvent ? 'Edit Event' : 'Create New Event'}</DialogTitle>
                   <DialogDescription>
-                    Create a new event for the community.
+                    {editingEvent ? 'Update event details' : 'Create a new event for the community.'}
                   </DialogDescription>
                 </DialogHeader>
                 <div className="space-y-4">
@@ -246,13 +327,16 @@ export const EventsSection = () => {
                     />
                   </div>
                 </div>
-                <DialogFooter>
+                <DialogFooter className="flex gap-2">
+                  <Button variant="outline" onClick={resetForm}>
+                    Cancel
+                  </Button>
                   <Button
-                    onClick={createEvent}
+                    onClick={editingEvent ? updateEvent : createEvent}
                     disabled={!eventTitle.trim() || !eventDate || creating}
                     className="btn-neon"
                   >
-                    {creating ? 'Creating...' : 'Create Event'}
+                    {creating ? (editingEvent ? 'Updating...' : 'Creating...') : (editingEvent ? 'Update Event' : 'Create Event')}
                   </Button>
                 </DialogFooter>
               </DialogContent>
@@ -271,14 +355,38 @@ export const EventsSection = () => {
                 style={{ animationDelay: `${index * 0.1}s` }}
               >
                 <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Calendar className="w-5 h-5 text-primary" />
-                    {event.title}
-                  </CardTitle>
-                  <CardDescription className="flex items-center gap-2">
-                    <Clock className="w-4 h-4" />
-                    {formatDate(event.event_date)}
-                  </CardDescription>
+                  <div className="flex justify-between items-start">
+                    <div className="flex-1">
+                      <CardTitle className="flex items-center gap-2">
+                        <Calendar className="w-5 h-5 text-primary" />
+                        {event.title}
+                      </CardTitle>
+                      <CardDescription className="flex items-center gap-2">
+                        <Clock className="w-4 h-4" />
+                        {formatDate(event.event_date)}
+                      </CardDescription>
+                    </div>
+                    {isAdmin && (
+                      <div className="flex gap-1">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => startEditEvent(event)}
+                          className="text-primary hover:bg-primary/10"
+                        >
+                          <Edit className="w-4 h-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => deleteEvent(event.id)}
+                          className="text-destructive hover:bg-destructive/10"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
+                      </div>
+                    )}
+                  </div>
                 </CardHeader>
                 
                 {event.description && (
@@ -314,21 +422,21 @@ export const EventsSection = () => {
               </Card>
             ))}
             
-            {upcomingEvents.length === 0 && (
-              <div className="col-span-full text-center py-12 glass-card rounded-2xl">
-                <Calendar className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
-                <p className="text-muted-foreground mb-4">No upcoming events</p>
-                {user && (
-                  <Button
-                    onClick={() => setShowCreateEvent(true)}
-                    className="btn-neon"
-                  >
-                    <Plus className="w-4 h-4 mr-2" />
-                    Create First Event
-                  </Button>
+                {upcomingEvents.length === 0 && (
+                  <div className="col-span-full text-center py-12 glass-card rounded-2xl">
+                    <Calendar className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
+                    <p className="text-muted-foreground mb-4">No upcoming events</p>
+                    {isAdmin && (
+                      <Button
+                        onClick={() => setShowCreateEvent(true)}
+                        className="btn-neon"
+                      >
+                        <Plus className="w-4 h-4 mr-2" />
+                        Create First Event
+                      </Button>
+                    )}
+                  </div>
                 )}
-              </div>
-            )}
           </div>
         </div>
 
