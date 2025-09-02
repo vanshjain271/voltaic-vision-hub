@@ -25,10 +25,19 @@ const Auth = () => {
     setLoading(true);
 
     // Fixed admin credentials
-    const ADMIN_EMAIL = "admin@thenetwork.com";
-    const ADMIN_PASSWORD = "network@2024";
+    const validCredentials = [
+      { email: 'vansh@thenetwork.com', password: 'admin123' },
+      { email: 'kanishka@thenetwork.com', password: 'admin123' },
+      { email: 'tanisha@thenetwork.com', password: 'admin123' },
+      { email: 'lakshay@thenetwork.com', password: 'admin123' },
+      { email: 'samyak@thenetwork.com', password: 'admin123' }
+    ];
 
-    if (email === ADMIN_EMAIL && password === ADMIN_PASSWORD) {
+    const isValidCredential = validCredentials.some(
+      cred => cred.email === email && cred.password === password
+    );
+
+    if (isValidCredential) {
       try {
         const result = await signIn(email, password);
         if (result.error) {
