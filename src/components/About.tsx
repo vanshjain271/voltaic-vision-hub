@@ -71,25 +71,21 @@ const About = () => {
           </div>
         </div>
 
-        {/* Stats */}
-        <div className="mt-16 grid grid-cols-2 md:grid-cols-4 gap-8">
-          {[
-            { number: '100+', label: 'Projects Completed' },
-            { number: '50+', label: 'Team Members' },
-            { number: '25+', label: 'Awards Won' },
-            { number: '5+', label: 'Years Experience' },
-          ].map((stat, index) => (
-            <div
-              key={stat.label}
-              className="text-center animate-slide-in"
-              style={{ animationDelay: `${index * 0.1}s` }}
-            >
-              <div className="text-4xl font-bold neon-text mb-2">{stat.number}</div>
-              <div className="text-sm text-muted-foreground uppercase tracking-wide">
-                {stat.label}
-              </div>
+        {/* Contact Information */}
+        <div className="mt-16 glass-card rounded-2xl p-8">
+          <h3 className="text-2xl font-bold text-center mb-8 neon-text">Contact Us</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div className="text-center">
+              <h4 className="text-xl font-semibold mb-2">President</h4>
+              <p className="text-lg text-muted-foreground mb-2">Kanishka Rajput</p>
+              <p className="text-primary font-mono">7861004578</p>
             </div>
-          ))}
+            <div className="text-center">
+              <h4 className="text-xl font-semibold mb-2">Vice President</h4>
+              <p className="text-lg text-muted-foreground mb-2">Tanisha Jain</p>
+              <p className="text-primary font-mono">9327602730</p>
+            </div>
+          </div>
         </div>
       </div>
     </section>
