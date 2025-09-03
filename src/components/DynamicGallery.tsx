@@ -217,7 +217,53 @@ export const DynamicGallery = () => {
     setUploading(false);
   };
 
-  // Delete photo
+  // Delete album
+  const deleteAlbum = async (albumId: string) => {
+    if (!user || !isAdmin) return;
+    
+    setUploading(true);
+    try {
+      // First delete all photos in the album
+      const { data: albumPhotos } = await supabase
+        .from('photos')
+        .select('id, image_url')
+        .eq('album_id', albumId);
+      
+      if (albumPhotos) {
+        // Delete photos from storage and database
+        for (const photo of albumPhotos) {
+          const urlParts = photo.image_url.split('/');
+          const bucketPath = urlParts.slice(-2).join('/');
+          await supabase.storage.from('albums').remove([bucketPath]);
+        }
+        
+        await supabase.from('photos').delete().eq('album_id', albumId);
+      }
+      
+      // Delete the album
+      const { error } = await supabase
+        .from('photo_albums')
+        .delete()
+        .eq('id', albumId);
+      
+      if (error) throw error;
+      
+      setAlbums(albums.filter(a => a.id !== albumId));
+      setSelectedAlbum(null);
+      
+      toast({
+        title: "Success",
+        description: "Album deleted successfully!",
+      });
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to delete album",
+        variant: "destructive",
+      });
+    }
+    setUploading(false);
+  };
   const deletePhoto = async (photoId: string, imageUrl: string) => {
     if (!user || !isAdmin) return;
     
@@ -344,6 +390,34 @@ export const DynamicGallery = () => {
                   </DialogFooter>
                 </DialogContent>
               </Dialog>
+
+              {selectedAlbum && isAdmin && (
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button variant="destructive" className="btn-glass">
+                      <Trash2 className="w-4 h-4 mr-2" />
+                      Delete Album
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent className="glass-card border-glass-border">
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Delete Album</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        Are you sure you want to delete "{selectedAlbum.title}"? This will also delete all photos in this album. This action cannot be undone.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Cancel</AlertDialogCancel>
+                      <AlertDialogAction
+                        onClick={() => deleteAlbum(selectedAlbum.id)}
+                        className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                      >
+                        Delete Album
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+              )}
 
               {selectedAlbum && (
                 <Dialog open={showUploadPhoto} onOpenChange={setShowUploadPhoto}>

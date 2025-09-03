@@ -11,7 +11,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { Search, Edit, MapPin, Calendar, Linkedin, Trash2 } from "lucide-react";
+import { Search, Edit, MapPin, Calendar, Linkedin, Trash2, UserPlus } from "lucide-react";
 import { useRole } from "@/hooks/useRole";
 
 interface Member {
@@ -235,7 +235,116 @@ export function MembersDirectory() {
           <p className="text-muted-foreground">Connect with our community members</p>
         </div>
         
-        {user && (
+        {user && isAdmin && (
+          <Dialog open={editingProfile} onOpenChange={setEditingProfile}>
+            <DialogTrigger asChild>
+              <Button className="btn-neon mr-2">
+                <UserPlus className="w-4 h-4 mr-2" />
+                Add Member
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="glass-card max-w-2xl">
+              <DialogHeader>
+                <DialogTitle className="neon-text">Add New Member</DialogTitle>
+                <DialogDescription>
+                  Add a new member to the directory (Admin only)
+                </DialogDescription>
+              </DialogHeader>
+              
+              <div className="space-y-4 py-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="name">Full Name</Label>
+                    <Input
+                      id="name"
+                      value={profileData.full_name}
+                      onChange={(e) => setProfileData({ ...profileData, full_name: e.target.value })}
+                      className="glass-card"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="position">Position</Label>
+                    <Input
+                      id="position"
+                      value={profileData.position}
+                      onChange={(e) => setProfileData({ ...profileData, position: e.target.value })}
+                      placeholder="e.g., President, Developer, Designer"
+                      className="glass-card"
+                    />
+                  </div>
+                </div>
+                
+                <div>
+                  <Label htmlFor="bio">Bio</Label>
+                  <Textarea
+                    id="bio"
+                    value={profileData.bio}
+                    onChange={(e) => setProfileData({ ...profileData, bio: e.target.value })}
+                    placeholder="Tell us about the member..."
+                    className="glass-card"
+                  />
+                </div>
+                
+                <div>
+                  <Label htmlFor="description">Description</Label>
+                  <Textarea
+                    id="description"
+                    value={profileData.description}
+                    onChange={(e) => setProfileData({ ...profileData, description: e.target.value })}
+                    placeholder="Detailed description about their role and expertise..."
+                    className="glass-card"
+                  />
+                </div>
+                
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="location">Location</Label>
+                    <Input
+                      id="location"
+                      value={profileData.location}
+                      onChange={(e) => setProfileData({ ...profileData, location: e.target.value })}
+                      placeholder="City, Country"
+                      className="glass-card"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="linkedin">LinkedIn URL</Label>
+                    <Input
+                      id="linkedin"
+                      value={profileData.linkedin_url}
+                      onChange={(e) => setProfileData({ ...profileData, linkedin_url: e.target.value })}
+                      placeholder="https://linkedin.com/in/username"
+                      className="glass-card"
+                    />
+                  </div>
+                </div>
+                
+                <div>
+                  <Label htmlFor="avatar">Profile Picture</Label>
+                  <Input
+                    id="avatar"
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) => setAvatarFile(e.target.files?.[0] || null)}
+                    className="glass-card"
+                  />
+                </div>
+              </div>
+              
+              <DialogFooter>
+                <Button
+                  onClick={updateProfile}
+                  disabled={!profileData.full_name.trim()}
+                  className="btn-neon"
+                >
+                  Add Member
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+        )}
+        
+        {user && !isAdmin && (
           <Dialog open={editingProfile} onOpenChange={setEditingProfile}>
             <DialogTrigger asChild>
               <Button className="btn-neon">
